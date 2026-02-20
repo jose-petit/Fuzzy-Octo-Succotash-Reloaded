@@ -1,0 +1,17 @@
+
+# Frontend Dockerfile
+FROM node:18-alpine
+WORKDIR /app
+
+# Instala dependencias solo si cambian los package*
+COPY package*.json ./
+RUN npm install
+
+# Copia el resto del código
+COPY . .
+
+# Expone el puerto de Vite
+EXPOSE 5173
+
+# Comando para desarrollo
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

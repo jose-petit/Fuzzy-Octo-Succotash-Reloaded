@@ -1,0 +1,310 @@
+{
+  "id": null,
+  "uid": "spans_8a40734e",
+  "title": "Span - DWDM-EL VENADO/A -> DWDM CIUDAD OJEDA/B [spans_8a40734e]",
+  "time": {
+    "from": "now-2y",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 0,
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Estado Global de Enlaces",
+      "datasource": "MySQL",
+      "targets": [
+        {
+          "refId": "G",
+          "format": "table",
+          "rawSql": "SELECT\n                  SUM(CASE WHEN last_span < 20 THEN 1 ELSE 0 END) AS verdes,\n                  SUM(CASE WHEN last_span >= 20 AND last_span < 30 THEN 1 ELSE 0 END) AS amarillos,\n                  SUM(CASE WHEN last_span >= 30 THEN 1 ELSE 0 END) AS rojos\n                FROM spans\n                WHERE link_identifier = 'DWDM-EL VENADO/A -> DWDM CIUDAD OJEDA/B'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 2
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ]
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 24,
+        "h": 4
+      }
+    },
+    {
+      "type": "table",
+      "title": "Logs/Eventos Relevantes",
+      "datasource": "MySQL",
+      "targets": [
+        {
+          "refId": "H",
+          "format": "table",
+          "rawSql": "SELECT id, link_identifier, last_span, last_updated, 'Evento' as tipo_evento\n                 FROM spans\n                 WHERE link_identifier = 'DWDM-EL VENADO/A -> DWDM CIUDAD OJEDA/B'\n                   AND (last_span >= 30 OR last_span < 20)\n                 ORDER BY last_updated DESC, id DESC\n                 LIMIT 20"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 28,
+        "w": 24,
+        "h": 6
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Último valor",
+      "datasource": "MySQL",
+      "targets": [
+        {
+          "refId": "C",
+          "format": "table",
+          "rawSql": "SELECT last_span FROM spans WHERE link_identifier = 'DWDM-EL VENADO/A -> DWDM CIUDAD OJEDA/B' ORDER BY last_updated DESC, id DESC LIMIT 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 20
+              },
+              {
+                "color": "red",
+                "value": 30
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Mínimo",
+      "datasource": "MySQL",
+      "targets": [
+        {
+          "refId": "D",
+          "format": "table",
+          "rawSql": "SELECT MIN(last_span) as min_span FROM spans WHERE link_identifier = 'DWDM-EL VENADO/A -> DWDM CIUDAD OJEDA/B'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "min"
+          ]
+        }
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Máximo",
+      "datasource": "MySQL",
+      "targets": [
+        {
+          "refId": "E",
+          "format": "table",
+          "rawSql": "SELECT MAX(last_span) as max_span FROM spans WHERE link_identifier = 'DWDM-EL VENADO/A -> DWDM CIUDAD OJEDA/B'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "max"
+          ]
+        }
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Promedio",
+      "datasource": "MySQL",
+      "targets": [
+        {
+          "refId": "F",
+          "format": "table",
+          "rawSql": "SELECT AVG(last_span) as avg_span FROM spans WHERE link_identifier = 'DWDM-EL VENADO/A -> DWDM CIUDAD OJEDA/B'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ]
+        }
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Tendencia de Span",
+      "datasource": "MySQL",
+      "targets": [
+        {
+          "refId": "A",
+          "format": "time_series",
+          "rawSql": "SELECT UNIX_TIMESTAMP(last_updated) * 1000 AS time, last_span AS value\nFROM spans\nWHERE $__timeFilter(last_updated)\n  AND link_identifier = 'DWDM-EL VENADO/A -> DWDM CIUDAD OJEDA/B'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {},
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 24,
+        "h": 8
+      }
+    },
+    {
+      "type": "table",
+      "title": "Recent Spans",
+      "datasource": "MySQL",
+      "targets": [
+        {
+          "refId": "B",
+          "format": "table",
+          "rawSql": "SELECT id, link_identifier, last_span, last_updated\nFROM spans\nWHERE link_identifier = 'DWDM-EL VENADO/A -> DWDM CIUDAD OJEDA/B'\nORDER BY last_updated DESC, id DESC\nLIMIT 100"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 24,
+        "h": 8
+      }
+    },
+    {
+      "type": "text",
+      "title": "Ayuda",
+      "options": {
+        "content": "Paneles:\n- Último valor: muestra el valor más reciente de atenuación.\n- Mínimo/Máximo/Promedio: resumen histórico.\n- Tendencia: evolución temporal.\n- Recent Spans: últimos registros.\n- Estado Global: resumen de enlaces en verde/amarillo/rojo.\n- Logs/Eventos: muestra eventos relevantes (fuera de rango).\n\nColores:\n- Verde: en rango\n- Amarillo: advertencia\n- Rojo: fuera de rango.\n\nFiltros: puedes filtrar por enlace desde el frontend."
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 4
+      }
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "link",
+        "type": "query",
+        "label": "Enlace",
+        "datasource": "MySQL",
+        "query": "SELECT DISTINCT link_identifier FROM spans",
+        "definition": "SELECT DISTINCT link_identifier FROM spans",
+        "multi": false,
+        "includeAll": false,
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "text": "DWDM-EL VENADO/A -> DWDM CIUDAD OJEDA/B",
+          "value": "DWDM-EL VENADO/A -> DWDM CIUDAD OJEDA/B"
+        },
+        "options": []
+      }
+    ]
+  },
+  "annotations": {
+    "list": [
+      {
+        "name": "Fuera de rango",
+        "datasource": "MySQL",
+        "enable": true,
+        "iconColor": "rgba(255, 0, 0, 1)",
+        "type": "alert",
+        "expr": "SELECT last_span FROM spans WHERE link_identifier = 'DWDM-EL VENADO/A -> DWDM CIUDAD OJEDA/B' AND last_span > 30",
+        "showLine": true
+      }
+    ]
+  }
+}

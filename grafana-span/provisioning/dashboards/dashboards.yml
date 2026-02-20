@@ -1,0 +1,26 @@
+apiVersion: 1
+providers:
+  - name: "default"
+    orgId: 1
+    folder: ""
+    type: "file"
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    options:
+      path: "/var/lib/grafana/dashboards"
+  - name: "Cisco"
+    orgId: 1
+    folder: "Cisco"
+    type: "file"
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    options:
+      path: "/var/lib/grafana/dashboards/cisco"
+  - name: "Padtec"
+    orgId: 1
+    folder: "Padtec"
+    type: "file"
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    options:
+      path: "/var/lib/grafana/dashboards/padtec"

@@ -1,0 +1,13 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Populate bus_data",
+      "type": "shell",
+      "command": "node scripts/populate_bus_data.js",
+      "problemMatcher": [],
+      "group": "none",
+      "isBackground": false
+    }
+  ]
+}

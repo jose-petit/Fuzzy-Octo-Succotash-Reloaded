@@ -1,0 +1,268 @@
+{
+  "id": null,
+  "uid": "wn_36c9ef7a",
+  "title": "Padtec - LibertyCoro -> PuntoFijo",
+  "time": {
+    "from": "now-90d",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 0,
+  "refresh": "30s",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Último valor (perdida)",
+      "datasource": "Web Notifications DB",
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT perdida FROM spans WHERE serial1='719' AND serial2='717' ORDER BY fecha_lote DESC, id DESC LIMIT 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 20
+              },
+              {
+                "color": "red",
+                "value": 30
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Delta vs Umbral",
+      "datasource": "Web Notifications DB",
+      "targets": [
+        {
+          "refId": "B",
+          "format": "table",
+          "rawSql": "SELECT (perdida - umbral) AS delta FROM spans WHERE serial1='719' AND serial2='717' ORDER BY fecha_lote DESC, id DESC LIMIT 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Mínimo",
+      "datasource": "Web Notifications DB",
+      "targets": [
+        {
+          "refId": "C",
+          "format": "table",
+          "rawSql": "SELECT MIN(perdida) AS min_span FROM spans WHERE $__timeFilter(fecha_lote) AND serial1='719' AND serial2='717'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Máximo",
+      "datasource": "Web Notifications DB",
+      "targets": [
+        {
+          "refId": "D",
+          "format": "table",
+          "rawSql": "SELECT MAX(perdida) AS max_span FROM spans WHERE $__timeFilter(fecha_lote) AND serial1='719' AND serial2='717'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Promedio",
+      "datasource": "Web Notifications DB",
+      "targets": [
+        {
+          "refId": "E",
+          "format": "table",
+          "rawSql": "SELECT AVG(perdida) AS avg_span FROM spans WHERE $__timeFilter(fecha_lote) AND serial1='719' AND serial2='717'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "gridPos": {
+        "x": 20,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Tendencia de Pérdida (AVG)",
+      "datasource": "Web Notifications DB",
+      "targets": [
+        {
+          "refId": "F",
+          "format": "time_series",
+          "rawSql": "SELECT $__timeGroup(fecha_lote, $__interval) AS time, AVG(perdida) AS perdida_avg\n           FROM spans\n           WHERE $__timeFilter(fecha_lote) AND serial1='719' AND serial2='717'\n           GROUP BY 1 ORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {},
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 24,
+        "h": 8
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Componentes (v3, v5, r1)",
+      "datasource": "Web Notifications DB",
+      "targets": [
+        {
+          "refId": "G",
+          "format": "time_series",
+          "rawSql": "SELECT $__timeGroup(fecha_lote, $__interval) AS time,\n                  AVG(CAST(JSON_UNQUOTE(JSON_EXTRACT(details,'$.components.v3')) AS DECIMAL(10,2))) AS v3,\n                  AVG(CAST(JSON_UNQUOTE(JSON_EXTRACT(details,'$.components.v5')) AS DECIMAL(10,2))) AS v5,\n                  AVG(CAST(JSON_UNQUOTE(JSON_EXTRACT(details,'$.components.r1')) AS DECIMAL(10,2))) AS r1\n           FROM spans\n           WHERE $__timeFilter(fecha_lote) AND serial1='719' AND serial2='717'\n           GROUP BY 1 ORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {},
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 24,
+        "h": 8
+      }
+    },
+    {
+      "type": "table",
+      "title": "Últimos registros",
+      "datasource": "Web Notifications DB",
+      "targets": [
+        {
+          "refId": "H",
+          "format": "table",
+          "rawSql": "SELECT fecha_lote, name1, serial1, name2, serial2, umbral, perdida,\n                    JSON_UNQUOTE(JSON_EXTRACT(details,'$.origin.card')) AS origin_card,\n                    JSON_UNQUOTE(JSON_EXTRACT(details,'$.target.card')) AS target_card\n             FROM spans\n             WHERE serial1='719' AND serial2='717'\n             ORDER BY fecha_lote DESC, id DESC\n             LIMIT 200"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 8
+      }
+    }
+  ],
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": []
+  }
+}

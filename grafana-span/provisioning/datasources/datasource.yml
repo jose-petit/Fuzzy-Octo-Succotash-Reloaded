@@ -1,0 +1,14 @@
+apiVersion: 1
+datasources:
+  - uid: "MySQL"
+    name: "MySQL"
+    type: mysql
+    access: proxy
+    url: "db:3306"
+    database: datosinter
+    user: dwdmcisco1
+    secureJsonData:
+      password: dwdmspan1
+    isDefault: true
+    jsonData:
+      sslmode: "disable"

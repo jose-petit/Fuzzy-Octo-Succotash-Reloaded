@@ -1,0 +1,282 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model bus_data {
+  id              Int       @id @default(autoincrement())
+  bus             String?   @db.VarChar(255)
+  card            String?   @db.VarChar(255)
+  ne              String?   @db.VarChar(255)
+  slot            Int?
+  position_rack   Int?
+  sub_rack        Int?
+  part            Int?
+  serial          Int?
+  type            String?   @db.VarChar(255)
+  value           Float?
+  collection_date DateTime? @db.DateTime(0)
+
+  @@index([ne], map: "idx_bus_data_ne")
+  @@index([serial], map: "idx_bus_data_serial")
+  @@index([card], map: "idx_busdata_card")
+  @@index([ne], map: "idx_busdata_ne")
+  @@index([serial], map: "idx_busdata_serial")
+}
+
+model data_firebase {
+  id          Int       @id @default(autoincrement())
+  firebase_id String    @unique(map: "firebase_id") @db.VarChar(255)
+  data        Json
+  created_at  DateTime? @default(now()) @db.Timestamp(0)
+  updated_at  DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model depositos {
+  id      Int       @id @default(autoincrement())
+  nombre  String    @db.VarChar(100)
+  codigo  String?   @db.VarChar(50)
+  equipos equipos[]
+}
+
+model enlace_padtec {
+  id                       Int                        @id @default(autoincrement())
+  firebase_id              String?                    @unique(map: "idx_enlace_padtec_firebase") @db.VarChar(255)
+  url                      String                     @db.VarChar(255)
+  atenuacion_acumulada     Float                      @default(0) @db.Float
+  fecha                    DateTime                   @default(now()) @db.DateTime(0)
+  enlace_padtec_atenuacion enlace_padtec_atenuacion[]
+}
+
+model enlace_padtec_atenuacion {
+  id            Int           @id @default(autoincrement())
+  enlace_id     Int
+  valor         Float         @db.Float
+  fecha         DateTime      @default(now()) @db.DateTime(0)
+  enlace_padtec enlace_padtec @relation(fields: [enlace_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_enlace_padtec_atenuacion_padtec")
+
+  @@index([enlace_id], map: "idx_enlace_padtec_id")
+}
+
+model equipos {
+  id                        Int           @id @default(autoincrement())
+  id_deposito               Int
+  id_proyecto               Int
+  id_sub_proyecto           Int
+  codigo_gx                 String?       @db.VarChar(100)
+  num_parte                 String?       @db.VarChar(255)
+  descripcion               String?       @db.Text
+  observacion               String?       @db.Text
+  cantidad                  Int?          @default(0)
+  autorizado_solicitado_por Int?
+  fecha                     DateTime?     @db.DateTime(0)
+  ciudad                    String?       @db.VarChar(100)
+  depositos                 depositos     @relation(fields: [id_deposito], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "equipos_ibfk_1")
+  proyectos                 proyectos     @relation(fields: [id_proyecto], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "equipos_ibfk_2")
+  sub_proyectos             sub_proyectos @relation(fields: [id_sub_proyecto], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "equipos_ibfk_3")
+  usuarios                  usuarios?     @relation(fields: [autorizado_solicitado_por], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "equipos_ibfk_4")
+
+  @@index([autorizado_solicitado_por], map: "autorizado_solicitado_por")
+  @@index([id_deposito], map: "id_deposito")
+  @@index([id_proyecto], map: "id_proyecto")
+  @@index([id_sub_proyecto], map: "id_sub_proyecto")
+}
+
+model proyectos {
+  id            Int             @id @default(autoincrement())
+  nombre        String          @db.VarChar(100)
+  descripcion   String?         @db.Text
+  estado        String          @db.VarChar(50)
+  equipos       equipos[]
+  sub_proyectos sub_proyectos[]
+}
+
+model settings {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  skey       String    @unique(map: "skey")
+  svalue     String
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  next_at    BigInt?
+}
+
+model spans {
+  id         Int       @id @default(autoincrement())
+  serial1    String?   @db.VarChar(255)
+  serial2    String?   @db.VarChar(255)
+  name1      String?   @db.VarChar(255)
+  name2      String?   @db.VarChar(255)
+  raman1        Float?
+  raman2        Float?
+  umbral        Float?
+  perdida       Float?
+  raman_offset1 Float?
+  hoa_rx_gain1  Float?
+  edfa_gain1    Float?
+  raman_offset2 Float?
+  hoa_rx_gain2  Float?
+  edfa_gain2    Float?
+  is_single     Boolean?  @default(false)
+  line_initial1 Float?
+  loss_reference Float?
+  diff_line1     Float?
+  diff_loss      Float?
+  fecha_lote    DateTime? @db.DateTime(0)
+  details       Json?
+
+  @@index([fecha_lote], map: "idx_spans_fecha_lote")
+}
+
+model sub_proyectos {
+  id          Int       @id @default(autoincrement())
+  project_id  Int
+  nombre      String    @db.VarChar(100)
+  descripcion String?   @db.Text
+  estado      String    @db.VarChar(50)
+  equipos     equipos[]
+  proyectos   proyectos @relation(fields: [project_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "sub_proyectos_ibfk_1")
+
+  @@index([project_id], map: "project_id")
+}
+
+model usuarios {
+  id             Int          @id @default(autoincrement())
+  nombre         String       @db.VarChar(100)
+  email          String       @unique(map: "email") @db.VarChar(100)
+  password       String       @db.VarChar(255)
+  rol            usuarios_rol
+  fecha_creacion DateTime?    @default(now()) @db.Timestamp(0)
+  equipos        equipos[]
+}
+
+enum usuarios_rol {
+  admin
+  usuario
+  auditor
+}
+
+model inventory_logs {
+  id          Int      @id @default(autoincrement())
+  id_equipo   Int
+  tipo        String   @db.VarChar(50) 
+  cantidad    Int
+  user_id     Int?
+  prev_stock  Int?
+  new_stock   Int?
+  descripcion String?  @db.Text
+  fecha       DateTime @default(now()) @db.DateTime(0)
+
+  @@index([id_equipo], map: "idx_inventory_log_equipo")
+}
+
+model audit_logs {
+  id           Int      @id @default(autoincrement())
+  entity_type  String   @db.VarChar(50) // e.g., "EQUIPMENT", "LINK", "USER"
+  entity_id    Int?
+  action       String   @db.VarChar(50) // e.g., "CREATE", "UPDATE", "DELETE"
+  user_id      Int?
+  user_name    String?  @db.VarChar(100)
+  prev_data    Json?
+  new_data     Json?
+  description  String?  @db.Text
+  fecha        DateTime @default(now()) @db.DateTime(0)
+
+  @@index([entity_type, entity_id], map: "idx_audit_entity")
+}
+
+model notifications {
+  id          Int      @id @default(autoincrement())
+  type        String   @db.VarChar(50) // e.g., "CRITICAL_LOSS", "SYSTEM"
+  title       String   @db.VarChar(255)
+  message     String   @db.Text
+  is_read     Boolean  @default(false)
+  severity    String   @db.VarChar(20) // e.g., "INFO", "WARNING", "CRITICAL"
+  entity_type String?  @db.VarChar(50)
+  entity_id   String?  @db.VarChar(255)
+  fecha       DateTime @default(now()) @db.DateTime(0)
+
+  @@index([is_read], map: "idx_notif_unread")
+}
+
+model system_settings {
+  id    Int    @id @default(autoincrement())
+  key   String @unique @db.VarChar(100)
+  value String @db.Text
+  updated_at DateTime @default(now()) @updatedAt @db.DateTime(0)
+}
+
+model active_alarms {
+  id           Int      @id @default(autoincrement())
+  entity_id    String   @unique @db.VarChar(255) // Serial del enlace
+  type         String   @db.VarChar(100)
+  severity     String   @db.VarChar(50)
+  start_value  Float
+  current_value Float
+  threshold    Float
+  acknowledged Boolean  @default(false)
+  acknowledged_by String? @db.VarChar(100)
+  fecha_inicio DateTime @default(now()) @db.DateTime(0)
+  fecha_update DateTime @default(now()) @updatedAt @db.DateTime(0)
+}
+
+model link_aliases {
+  id        Int      @id @default(autoincrement())
+  serial    String   @unique @db.VarChar(100)
+  alias     String   @db.VarChar(255)
+  updated_at DateTime @default(now()) @updatedAt @db.DateTime(0)
+}
+
+model link_acks {
+  id        Int      @id @default(autoincrement())
+  serial    String   @unique @db.VarChar(100)
+  loss      Float
+  expires   DateTime
+  updated_at DateTime @default(now()) @updatedAt @db.DateTime(0)
+}
+
+model telegram_destinations {
+  id              Int       @id @default(autoincrement())
+  chat_id         String    @unique @db.VarChar(100)
+  chat_name       String    @db.VarChar(255)
+  alias           String?   @db.VarChar(255)
+  chat_type       String    @db.VarChar(50) // 'group', 'private', 'channel'
+  is_active       Boolean   @default(true)
+  can_query       Boolean   @default(false)
+  last_hidden_at  DateTime? @db.DateTime(0)
+  created_at      DateTime  @default(now()) @db.DateTime(0)
+  updated_at      DateTime  @default(now()) @updatedAt @db.DateTime(0)
+
+  @@index([is_active], map: "idx_telegram_active")
+}
+
+
+model maintenance_windows {
+  id          Int      @id @default(autoincrement())
+  title       String   @db.VarChar(255)
+  description String?  @db.Text
+  start_date  DateTime @db.DateTime(0)
+  end_date    DateTime @db.DateTime(0)
+  entity_id   String?  @db.VarChar(255) // Serial del enlace o equipo
+  status      String   @default("scheduled") @db.VarChar(50) // scheduled, active, completed, cancelled
+  created_at  DateTime @default(now()) @db.DateTime(0)
+  updated_at  DateTime @default(now()) @updatedAt @db.DateTime(0)
+
+  @@index([start_date, end_date], map: "idx_maint_date")
+}
+
+model network_events {
+  id          Int      @id @default(autoincrement())
+  entity_id   String   @db.VarChar(255)
+  event_type  String   @db.VarChar(100)
+  description String?  @db.Text
+  severity    String   @db.VarChar(50)
+  start_date  DateTime @default(now()) @db.DateTime(0)
+  end_date    DateTime? @db.DateTime(0)
+  details     Json?
+  created_at  DateTime @default(now()) @db.DateTime(0)
+
+  @@index([entity_id, start_date], map: "idx_event_entity_date")
+}

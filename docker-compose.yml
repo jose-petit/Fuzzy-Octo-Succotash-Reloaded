@@ -1,0 +1,144 @@
+services:
+  # 1. Base de Datos - Web Notifications
+  mysql-wn:
+    image: mysql:8.0
+    container_name: mysql_wn_combined
+    ports:
+      - '4306:3306'
+    environment:
+      MYSQL_DATABASE: web_notifications
+      MYSQL_USER: web_user
+      MYSQL_PASSWORD: web_pass
+      MYSQL_ROOT_PASSWORD: root_web_pass
+    volumes:
+      - db_wn_data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+    command: --skip-name-resolve --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+
+  # 2. Base de Datos - Span Processor (Cisco)
+  mysql-span:
+    image: mysql:8.0
+    container_name: mysql_span_combined
+    ports:
+      - '4307:3306'
+    environment:
+      MYSQL_DATABASE: datosinter
+      MYSQL_USER: dwdmcisco1
+      MYSQL_PASSWORD: dwdmspan1
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - db_span_data:/var/lib/mysql
+    command: --skip-name-resolve --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+
+  # 3. Frontend Unificado (Next.js)
+  web:
+    build: .
+    container_name: web_combined
+    depends_on:
+      - mysql-wn
+      - mysql-span
+    env_file: .env
+
+    environment:
+      NODE_ENV: development
+      NODE_OPTIONS: "--max-old-space-size=4096"
+      DB_HOST: mysql-wn
+      DB_PORT: '3306'
+      DB_NAME: web_notifications
+      DB_USER: web_user
+      DB_PASSWORD: web_pass
+      DB_SPAN_HOST: mysql-span
+      DB_SPAN_PORT: '3306'
+      DB_SPAN_NAME: datosinter
+      DB_SPAN_USER: dwdmcisco1
+      DB_SPAN_PASSWORD: dwdmspan1
+      NEXTAUTH_URL: http://localhost:4000
+      NEXTAUTH_URL_INTERNAL: http://localhost:4000
+      HOSTNAME: 0.0.0.0
+    command: npx next dev -H 0.0.0.0 -p 4000
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - '4000:4000'
+    restart: unless-stopped
+
+  # 4. Backend NMS (Telegram Bot)
+  performance-backend:
+    build:
+      context: .
+      dockerfile: backend-performance/Dockerfile
+    container_name: nms_backend_combined
+    depends_on:
+      - mysql-wn
+    env_file: .env
+    environment:
+      DB_HOST: mysql-wn
+      DB_PORT: '3306'
+      DB_SPAN_HOST: mysql-span
+      DB_SPAN_PORT: '3306'
+      DB_SPAN_USER: dwdmcisco1
+      DB_SPAN_PASSWORD: dwdmspan1
+      DB_SPAN_NAME: datosinter
+    ports:
+      - '5050:5000'
+    volumes:
+      - ./backend-performance:/app
+      - /app/node_modules
+    restart: unless-stopped
+
+  # 5. Backend Span Processor (AI & Dashboards)
+  span-backend:
+    build:
+      context: ./backend-span
+    container_name: span_backend_combined
+    depends_on:
+      - mysql-span
+    env_file: .env
+    environment:
+      DB_HOST: mysql-span
+      DB_PORT: '3306'
+      DB_USER: dwdmcisco1
+      DB_PASSWORD: dwdmspan1
+      DB_NAME: datosinter
+    ports:
+      - '4010:3001'
+    volumes:
+      - ./scripts-span:/app/scripts:ro
+      - ./tmp:/app/tmp:ro
+      - ../dwdm-span-processor-dev/csv-drop:/app/csv-drop:rw
+      - ./backend-span:/app
+      - /app/node_modules
+    command: node server.js
+    restart: unless-stopped
+
+  # 6. Grafana Consolidado
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana_combined
+    ports:
+      - '4030:3000'
+    volumes:
+      - grafana_combined_data:/var/lib/grafana
+      - ./grafana-span/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana-span/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./grafana-span/provisioning/users:/etc/grafana/provisioning/users:ro
+      - ./grafana-span/dashboards:/var/lib/grafana/dashboards:ro
+    environment:
+      GF_SECURITY_ADMIN_USER: "jpetit"
+      GF_SECURITY_ADMIN_PASSWORD: "666"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_INSTALL_PLUGINS: "grafana-piechart-panel,grafana-worldmap-panel"
+    restart: unless-stopped
+
+volumes:
+  db_wn_data:
+    external: true
+    name: web-notifications_db_web_notifications
+  db_span_data:
+    external: true
+    name: web-notifications_db_span_data
+  grafana_combined_data:

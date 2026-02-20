@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  # --- BASE DE DATOS DE PRUEBAS (STAGING) ---
+  mysql-staging:
+    image: mysql:8.0
+    container_name: mysql_staging_web_notifications
+    ports:
+      - '3309:3306' # Puerto externo distinto (3309) para no chocar con el 3308
+    environment:
+      MYSQL_DATABASE: web_notifications
+      MYSQL_USER: web_user
+      MYSQL_PASSWORD: web_pass
+      MYSQL_ROOT_PASSWORD: root_web_pass
+    volumes:
+      - db_staging_data:/var/lib/mysql # Volumen SEPARADO. Si la borras, no pasa nada.
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+    restart: unless-stopped
+    networks:
+      - staging-net
+
+  # --- FRONTEND (STAGING) ---
+  web-staging:
+    build: .
+    container_name: web_staging
+    depends_on:
+      - mysql-staging
+    environment:
+      DB_HOST: mysql-staging
+      DB_PORT: '3306' # Puerto INTERNO de la red docker (siempre 3306 para mysql)
+      DB_NAME: web_notifications
+      DB_USER: web_user
+      DB_PASSWORD: web_pass
+      DATABASE_URL: mysql://web_user:web_pass@mysql-staging:3306/web_notifications
+      NEXTAUTH_URL: http://10.4.4.124:3005
+      NEXTAUTH_URL_INTERNAL: http://localhost:3001
+      NEXTAUTH_SECRET: staging_secret_key
+      # Apuntar al backend de performance DE STAGING, no al de prod
+      NEXT_PUBLIC_PERF_BACKEND_URL: http://10.4.4.124:5001
+      NEXT_PUBLIC_SPAN_VIRTUAL: 'on'
+      TELEGRAM_BOT_TOKEN: '8000630753:AAFORIv78a3M_ni19QfrhFpHjceMOQKouLE'
+      TELEGRAM_CHAT_ID: '-5136763519'
+    ports:
+      - '3005:3001' # Accedes por localhost:3005
+    restart: unless-stopped
+    networks:
+      - staging-net
+
+  # --- BACKEND PERFORMANCE (STAGING) ---
+  performance-backend-staging:
+    build:
+      context: .
+      dockerfile: backend-performance/Dockerfile.staging
+    container_name: performance_staging
+    depends_on:
+      - mysql-staging
+    environment:
+      DB_HOST: mysql-staging
+      DB_PORT: '3306'
+      DB_NAME: web_notifications
+      DB_USER: web_user
+      DB_PASSWORD: web_pass
+      PORT: 5000
+      PADTEC_USER: 'josepetit'
+      PADTEC_PASS: 'jose123+'
+      PADTEC_URL: 'http://10.253.0.118'
+      TELEGRAM_BOT_TOKEN: '8000630753:AAFORIv78a3M_ni19QfrhFpHjceMOQKouLE'
+      TELEGRAM_CHAT_ID: '-5136763519'
+    ports:
+      - '5001:5000' # Accedes por localhost:5001
+    restart: unless-stopped
+    networks:
+      - staging-net
+
+volumes:
+  db_staging_data:
+    # Volumen nuevo y vacío para pruebas
+
+networks:
+  staging-net:
+    driver: bridge

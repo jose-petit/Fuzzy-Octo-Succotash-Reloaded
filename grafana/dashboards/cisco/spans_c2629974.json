@@ -1,0 +1,74 @@
+{
+  "uid": "spans_c2629974",
+  "title": "Span - DWDM-BOCONO/A -> DWDM-TOCUYO/B [spans_c2629974]",
+  "time": {
+    "from": "now-2y",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 0,
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Último valor",
+      "datasource": "MySQL",
+      "targets": [
+        {
+          "refId": "C",
+          "format": "table",
+          "rawSql": "SELECT last_span FROM spans WHERE link_identifier = 'DWDM-BOCONO/A -> DWDM-TOCUYO/B' ORDER BY last_updated DESC, id DESC LIMIT 1"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Tendencia de Span",
+      "datasource": "MySQL",
+      "targets": [
+        {
+          "refId": "A",
+          "format": "time_series",
+          "rawSql": "SELECT UNIX_TIMESTAMP(last_updated) * 1000 AS time, last_span AS value FROM spans WHERE $__timeFilter(last_updated) AND link_identifier = 'DWDM-BOCONO/A -> DWDM-TOCUYO/B'"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 24,
+        "h": 8
+      }
+    },
+    {
+      "type": "table",
+      "title": "Recent Spans",
+      "datasource": "MySQL",
+      "targets": [
+        {
+          "refId": "B",
+          "format": "table",
+          "rawSql": "SELECT id, link_identifier, last_span, last_updated FROM spans WHERE link_identifier = 'DWDM-BOCONO/A -> DWDM-TOCUYO/B' ORDER BY last_updated DESC, id DESC LIMIT 100"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 24,
+        "h": 8
+      }
+    }
+  ],
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": []
+  }
+}

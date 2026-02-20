@@ -1,0 +1,72 @@
+{
+  "id": null,
+  "uid": "wn_index",
+  "title": "Padtec - Índice de Enlaces",
+  "time": {
+    "from": "now-90d",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "type": "table",
+      "title": "Enlaces (click para abrir)",
+      "datasource": "Web Notifications DB",
+      "targets": [
+        {
+          "refId": "L",
+          "format": "table",
+          "rawSql": "SELECT\n             MAX(name1) AS name1,\n             MAX(name2) AS name2,\n             serial1,\n             serial2,\n             CONCAT(serial1, '|', serial2) AS link_key\n           FROM spans\n           GROUP BY serial1, serial2\n           ORDER BY MAX(fecha_lote) DESC"
+        }
+      ],
+      "options": {
+        "showHeader": true
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "link_key"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Abrir dashboard",
+                    "url": "/d/${__value.text}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 300
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 12
+      }
+    },
+    {
+      "type": "text",
+      "title": "Índice (links directos)",
+      "options": {
+        "content": "- [Anaco -> Punta de Mata](/d/wn_72ad0da9)\n- [Anaco -> Barcelona](/d/wn_af73bcee)\n- [Anaco -> El Tigre](/d/wn_2863a054)\n- [Anaco -> Zaraza](/d/wn_37195301)\n- [Aragua de Maturin -> Maturin 2](/d/wn_db8e87d8)\n- [Barcelona -> Anaco](/d/wn_b27ed72e)\n- [Barcelona -> Clarines](/d/wn_54bb0756)\n- [Barcelona -> Cumana](/d/wn_ffe88d1e)\n- [Blanquero -> Maturin2](/d/wn_53634ef6)\n- [Blanquero -> Temblador](/d/wn_029652cb)\n- [Caracas -> Guarenas](/d/wn_6f07c33e)\n- [Caracas (Movistar) -> Turmero (Movistar)](/d/wn_48a83eda)\n- [Caracas(Soplado) -> Turmero (Soplado)](/d/wn_693da0c9)\n- [Chaguarama -> Puerto Ordaz](/d/wn_a491c6e9)\n- [Chaguarama -> Temblador](/d/wn_64c3dcf5)\n- [Ciudad Bolivar -> El Tigre](/d/wn_7985f891)\n- [Clarines -> Boca de Uchire](/d/wn_45b63ee0)\n- [Cumana -> Barcelona](/d/wn_b218b51c)\n- [Cumana -> Cumanacoa](/d/wn_50d627a7)\n- [Cumanacoa -> Cumana](/d/wn_0f6f7c6d)\n- [El Clavo -> Boca de Uchire](/d/wn_357c45a2)\n- [El Clavo -> Guarenas](/d/wn_7a498fba)\n- [El Tigre -> Ciudad Bolivar](/d/wn_a8e5011e)\n- [El Tigre -> Anaco](/d/wn_73d2a59d)\n- [Guarenas -> El Clavo](/d/wn_b91ab814)\n- [Guarenas -> Caracas](/d/wn_c7fab71d)\n- [LibertyCoro -> PuntoFijo](/d/wn_36c9ef7a)\n- [Maturin -> Punta de Mata](/d/wn_abc63551)\n- [Maturin 2 -> Aragua de Maturin](/d/wn_5109de38)\n- [Maturin2 -> Blanquero](/d/wn_7413868a)\n- [Puerto Ordaz -> Chaguarama](/d/wn_b32ad152)\n- [Punta de Mata -> Anaco](/d/wn_7e9482d5)\n- [Punta de Mata -> Maturin](/d/wn_3fbbbec0)\n- [PuntoFijo -> LibertyCoro](/d/wn_2e44bc20)\n- [San Juan de los Morros -> Sombrero](/d/wn_f15f2c22)\n- [San Juan de los Morros -> Turmero](/d/wn_bd1d97f9)\n- [Sombrero -> Valle de la Pascua](/d/wn_cf304063)\n- [Sombrero -> San Juan de los Morros](/d/wn_90e1880d)\n- [Temblador -> Chaguarama](/d/wn_0129d014)\n- [Temblador -> Blanquero](/d/wn_fea13482)\n- [Turmero -> San Juan de los Morros](/d/wn_356543af)\n- [Turmero (Movistar) -> Caracas (Movistar)](/d/wn_0d1298b7)\n- [Turmero (Soplado) -> Caracas(Soplado)](/d/wn_67357338)\n- [Valle de la Pascua -> Sombrero](/d/wn_534f4b1a)\n- [Valle de la Pascua -> Zaraza](/d/wn_ffef6f53)\n- [Zaraza -> Valle de la Pascua](/d/wn_9d3c1bfe)\n- [Zaraza -> Anaco](/d/wn_ce2d92a1)"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 24,
+        "h": 12
+      }
+    }
+  ]
+}

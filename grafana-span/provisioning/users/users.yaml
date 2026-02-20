@@ -1,0 +1,12 @@
+apiVersion: 1
+users:
+  - name: "jpetit"
+    email: "you@domain.com"
+    login: "jpetit"
+    password: "666"
+    isAdmin: true
+  - name: "dwdm"
+    email: "dwdm@localhost"
+    login: "dwdm"
+    password: "t0pt1c0"
+    isAdmin: true
